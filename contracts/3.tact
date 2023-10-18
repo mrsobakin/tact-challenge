@@ -80,10 +80,12 @@ contract Task3 with Deployable {
         let toSend: Int = 0;
         let addr: Address = self.jettonAddressB;
         if (sender() == self.jettonAddressA) {
+            require(self.aAmount != 0, "Cannot calculate the price");
             toSend = (self.bAmount * self.decimal / self.aAmount) * msg.amount / self.decimal;
             require(toSend <= self.bAmount, "Not enough jettons on contract B");
             self.bAmount = self.bAmount - toSend;
         } else if (sender() == self.jettonAddressB) {
+            require(self.bAmount != 0, "Cannot calculate the price");
             toSend = (self.aAmount * self.decimal / self.bAmount) * msg.amount / self.decimal;
             require(toSend <= self.aAmount, "Not enough jettons on contract A");
             self.aAmount = self.aAmount - toSend;
@@ -110,6 +112,10 @@ contract Task3 with Deployable {
     } 
     
     get fun price(jetton: Address): Int { 
+        if (self.aAmount == 0 || self.bAmount == 0) {
+            return 0;
+        }
+
         if (jetton == self.jettonAddressA) {
             return self.aAmount * self.decimal / self.bAmount;
         } else {
