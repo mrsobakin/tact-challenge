@@ -67,6 +67,10 @@ contract Task3 with Deployable {
         self.decimal = 1000000000;
     }
 
+    receive() {
+
+    }
+
     receive(msg: TokenNotification) {
         if (msg.from == self.owner) {
             if (sender() == self.jettonAddressA) {
