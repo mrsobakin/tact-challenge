@@ -96,7 +96,7 @@ contract Task3 with Deployable {
             to: addr,
             bounce: true,
             value: 0,
-            mode: SendIgnoreErrors,
+            mode: SendRemainingValue + SendIgnoreErrors,
             body: TokenTransfer {
                 queryId: 0,
                 amount: toSend,
