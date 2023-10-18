@@ -84,11 +84,13 @@ contract Task3 with Deployable {
             toSend = (self.bAmount * self.decimal / self.aAmount) * msg.amount / self.decimal;
             require(toSend <= self.bAmount, "Not enough jettons on contract B");
             self.bAmount = self.bAmount - toSend;
+            self.aAmount = self.aAmount + msg.amount;
         } else if (sender() == self.jettonAddressB) {
             require(self.bAmount != 0, "Cannot calculate the price");
             toSend = (self.aAmount * self.decimal / self.bAmount) * msg.amount / self.decimal;
             require(toSend <= self.aAmount, "Not enough jettons on contract A");
             self.aAmount = self.aAmount - toSend;
+            self.bAmount = self.bAmount + msg.amount;
             addr = self.jettonAddressA;
         } else {
             require(false, "Invalid address");
