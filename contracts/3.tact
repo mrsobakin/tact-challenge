@@ -82,13 +82,51 @@ contract Task3 with Deployable {
         if (sender() == self.jettonAddressA) {
             require(self.aAmount != 0, "Cannot calculate the price");
             toSend = (self.bAmount * self.decimal / self.aAmount) * msg.amount / self.decimal;
-            require(toSend <= self.bAmount, "Not enough jettons on contract B");
+
+            if (toSend > self.bAmount) {
+                send(SendParameters{
+                    to: sender(),
+                    bounce: true,
+                    value: 0,
+                    mode: SendRemainingValue + SendIgnoreErrors,
+                    body: TokenTransfer {
+                        queryId: 0,
+                        amount: msg.amount,
+                        destination: msg.from,
+                        responseDestination: myAddress(),
+                        customPayload: null,
+                        forwardTonAmount: ton("0.01"),
+                        forwardPayload: emptySlice()
+                    }.toCell()   
+                });
+                return;
+            }
+
             self.bAmount = self.bAmount - toSend;
             self.aAmount = self.aAmount + msg.amount;
         } else if (sender() == self.jettonAddressB) {
             require(self.bAmount != 0, "Cannot calculate the price");
             toSend = (self.aAmount * self.decimal / self.bAmount) * msg.amount / self.decimal;
-            require(toSend <= self.aAmount, "Not enough jettons on contract A");
+
+            if (toSend > self.aAmount) {
+                send(SendParameters{
+                    to: sender(),
+                    bounce: true,
+                    value: 0,
+                    mode: SendRemainingValue + SendIgnoreErrors,
+                    body: TokenTransfer {
+                        queryId: 0,
+                        amount: msg.amount,
+                        destination: msg.from,
+                        responseDestination: myAddress(),
+                        customPayload: null,
+                        forwardTonAmount: ton("0.01"),
+                        forwardPayload: emptySlice()
+                    }.toCell()   
+                });
+                return;
+            }
+
             self.aAmount = self.aAmount - toSend;
             self.bAmount = self.bAmount + msg.amount;
             addr = self.jettonAddressA;
