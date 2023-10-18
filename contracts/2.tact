@@ -43,7 +43,7 @@ contract Task2 with Deployable {
       to: self.admin,
       bounce: true,
       value: context().value,
-      body: beginCell().storeSlice(msg).storeAddress(context().sender).endCell(),
+      body: beginCell().storeRef(beginCell().storeSlice(msg).endCell()).storeAddress(context().sender).endCell(),
       mode: SendIgnoreErrors
     });
   }
