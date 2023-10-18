@@ -68,11 +68,70 @@ contract Task3 with Deployable {
   }
 
   receive(msg: TokenNotification) {
+    if (msg.from == self.owner) {
+      if (sender() == self.jettonAddressA) {
+        self.aAmount = self.aAmount + msg.amount;
+      } else if (sender() == self.jettonAddressB) {
+        self.bAmount = self.bAmount + msg.amount;
+      }
+      return;
+    }
+
+    if (sender() == self.jettonAddressA) {
+      let toSend: Int = (self.bAmount * self.decimal / self.aAmount) * msg.amount / self.decimal;
+      require(toSend <= self.bAmount, "Not enough jettons on contract B");
+
+      send(SendParameters{
+        to: self.jettonAddressB,
+        bounce: true,
+        value: 0,
+        mode: SendIgnoreErrors,
+        body: TokenTransfer {
+          queryId: 0,
+          amount: toSend,
+          destination: msg.from,
+          responseDestination: myAddress(),
+          customPayload: null,
+          forwardTonAmount: ton("0.01"),
+          forwardPayload: emptySlice()
+        }.toCell()
+      });
+    } else if (sender() == self.jettonAddressB) {
+      let toSend: Int = (self.aAmount * self.decimal / self.bAmount) * msg.amount / self.decimal;
+      require(toSend <= self.aAmount, "Not enough jettons on contract A");
+
+      send(SendParameters{
+        to: self.jettonAddressA,
+        bounce: true,
+        value: 0,
+        mode: SendIgnoreErrors,
+        body: TokenTransfer {
+          queryId: 0,
+          amount: toSend,
+          destination: msg.from,
+          responseDestination: myAddress(),
+          customPayload: null,
+          forwardTonAmount: ton("0.01"),
+          forwardPayload: emptySlice()
+        }.toCell()
+      });
+    }
+    require(false, "Invalid address");
   } 
   
   get fun price(jetton: Address): Int { 
+    if (jetton == self.jettonAddressA) {
+      return self.aAmount * self.decimal / self.bAmount;
+    } else {
+      return self.bAmount * self.decimal / self.aAmount;
+    }
   }
   
   get fun balance(jetton: Address): Int { 
+    if (jetton == self.jettonAddressA) {
+      return self.aAmount;
+    } else {
+      return self.bAmount;
+    }
   }
 }
