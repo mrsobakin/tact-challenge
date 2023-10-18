@@ -41,97 +41,87 @@ message(0x7362d09c) TokenNotification {
 
 // To simplify the testing process and the specificity of the messages being sent, we decided to add clear default values in this transaction
 message(0xf8a7ea5) TokenTransfer {
-     queryId: Int as uint64; // should be 0
-     amount: Int as coins; // should be amount of jettons to send
-     destination: Address; // should be user address / TokenNotification.from
-     responseDestination: Address?; // should be myAddress()
-     customPayload: Cell?; // should be null
-     forwardTonAmount: Int as coins; // should be ton("0.01")
-     forwardPayload: Slice as remaining; // should be emptySlice()
+    queryId: Int as uint64; // should be 0
+    amount: Int as coins; // should be amount of jettons to send
+    destination: Address; // should be user address / TokenNotification.from
+    responseDestination: Address?; // should be myAddress()
+    customPayload: Cell?; // should be null
+    forwardTonAmount: Int as coins; // should be ton("0.01")
+    forwardPayload: Slice as remaining; // should be emptySlice()
 }
 
 contract Task3 with Deployable {
-  owner: Address;
-  aAmount: Int;
-  bAmount: Int;
-  jettonAddressA: Address;
-  jettonAddressB: Address;
-  decimal: Int;
+    owner: Address;
+    aAmount: Int;
+    bAmount: Int;
+    jettonAddressA: Address;
+    jettonAddressB: Address;
+    decimal: Int;
 
-  init(admin: Address, newJettonAddressA: Address, newJettonAddressB: Address) {
-    self.owner = admin;
-    self.jettonAddressA = newJettonAddressA;
-    self.jettonAddressB = newJettonAddressB;
-    self.aAmount = 0;
-    self.bAmount = 0;
-    self.decimal = 1000000000;
-  }
-
-  receive(msg: TokenNotification) {
-    if (msg.from == self.owner) {
-      if (sender() == self.jettonAddressA) {
-        self.aAmount = self.aAmount + msg.amount;
-      } else if (sender() == self.jettonAddressB) {
-        self.bAmount = self.bAmount + msg.amount;
-      }
-      return;
+    init(admin: Address, newJettonAddressA: Address, newJettonAddressB: Address) {
+        self.owner = admin;
+        self.jettonAddressA = newJettonAddressA;
+        self.jettonAddressB = newJettonAddressB;
+        self.aAmount = 0;
+        self.bAmount = 0;
+        self.decimal = 1000000000;
     }
 
-    if (sender() == self.jettonAddressA) {
-      let toSend: Int = (self.bAmount * self.decimal / self.aAmount) * msg.amount / self.decimal;
-      require(toSend <= self.bAmount, "Not enough jettons on contract B");
+    receive(msg: TokenNotification) {
+        if (msg.from == self.owner) {
+            if (sender() == self.jettonAddressA) {
+                self.aAmount = self.aAmount + msg.amount;
+            } else if (sender() == self.jettonAddressB) {
+                self.bAmount = self.bAmount + msg.amount;
+            }
+            return;
+        }
 
-      send(SendParameters{
-        to: self.jettonAddressB,
-        bounce: true,
-        value: 0,
-        mode: SendIgnoreErrors,
-        body: TokenTransfer {
-          queryId: 0,
-          amount: toSend,
-          destination: msg.from,
-          responseDestination: myAddress(),
-          customPayload: null,
-          forwardTonAmount: ton("0.01"),
-          forwardPayload: emptySlice()
-        }.toCell()
-      });
-    } else if (sender() == self.jettonAddressB) {
-      let toSend: Int = (self.aAmount * self.decimal / self.bAmount) * msg.amount / self.decimal;
-      require(toSend <= self.aAmount, "Not enough jettons on contract A");
+        let toSend: Int = 0;
+        let addr: Address = self.jettonAddressB;
+        if (sender() == self.jettonAddressA) {
+            toSend = (self.bAmount * self.decimal / self.aAmount) * msg.amount / self.decimal;
+            require(toSend <= self.bAmount, "Not enough jettons on contract B");
+            self.bAmount = self.bAmount - toSend;
+        } else if (sender() == self.jettonAddressB) {
+            toSend = (self.aAmount * self.decimal / self.bAmount) * msg.amount / self.decimal;
+            require(toSend <= self.aAmount, "Not enough jettons on contract A");
+            self.aAmount = self.aAmount - toSend;
+            addr = self.jettonAddressA;
+        } else {
+            require(false, "Invalid address");
+        }
 
-      send(SendParameters{
-        to: self.jettonAddressA,
-        bounce: true,
-        value: 0,
-        mode: SendIgnoreErrors,
-        body: TokenTransfer {
-          queryId: 0,
-          amount: toSend,
-          destination: msg.from,
-          responseDestination: myAddress(),
-          customPayload: null,
-          forwardTonAmount: ton("0.01"),
-          forwardPayload: emptySlice()
-        }.toCell()
-      });
+        send(SendParameters{
+            to: addr,
+            bounce: true,
+            value: 0,
+            mode: SendIgnoreErrors,
+            body: TokenTransfer {
+                queryId: 0,
+                amount: toSend,
+                destination: msg.from,
+                responseDestination: myAddress(),
+                customPayload: null,
+                forwardTonAmount: ton("0.01"),
+                forwardPayload: emptySlice()
+            }.toCell()   
+        });
+    } 
+    
+    get fun price(jetton: Address): Int { 
+        if (jetton == self.jettonAddressA) {
+            return self.aAmount * self.decimal / self.bAmount;
+        } else {
+            return self.bAmount * self.decimal / self.aAmount;
+        }
     }
-    require(false, "Invalid address");
-  } 
-  
-  get fun price(jetton: Address): Int { 
-    if (jetton == self.jettonAddressA) {
-      return self.aAmount * self.decimal / self.bAmount;
-    } else {
-      return self.bAmount * self.decimal / self.aAmount;
+    
+    get fun balance(jetton: Address): Int { 
+        if (jetton == self.jettonAddressA) {
+            return self.aAmount;
+        } else {
+            return self.bAmount;
+        }
     }
-  }
-  
-  get fun balance(jetton: Address): Int { 
-    if (jetton == self.jettonAddressA) {
-      return self.aAmount;
-    } else {
-      return self.bAmount;
-    }
-  }
 }
