@@ -31,7 +31,7 @@ contract Task2 with Deployable {
   receive(msg: Refund) {
     require(sender() == self.admin, "Only contract admin is allowed to refund");
     send(SendParameters{
-      to: sender(),
+      to: msg.sender,
       bounce: true,
       value: context().value,
       mode: SendIgnoreErrors
