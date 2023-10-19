@@ -33,46 +33,106 @@ import "@stdlib/deploy";
 */
 
 message(0x7362d09c) TokenNotification {
-    queryId: Int as uint64;
-    amount: Int as coins;
-    from: Address;
-    forwardPayload: Slice as remaining;
+  queryId: Int as uint64;
+  amount: Int as coins;
+  from: Address;
+  forwardPayload: Slice as remaining;
 }
 
 // To simplify the testing process and the specificity of the messages being sent, we decided to add clear default values in this transaction
 message(0xf8a7ea5) TokenTransfer {
-     queryId: Int as uint64; // should be 0
-     amount: Int as coins; // should be amount of jettons to send
-     destination: Address; // should be user address / TokenNotification.from
-     responseDestination: Address?; // should be myAddress()
-     customPayload: Cell?; // should be null
-     forwardTonAmount: Int as coins; // should be ton("0.01")
-     forwardPayload: Slice as remaining; // should be emptySlice()
+  queryId: Int as uint64; // should be 0
+  amount: Int as coins; // should be amount of jettons to send
+  destination: Address; // should be user address / TokenNotification.from
+  responseDestination: Address?; // should be myAddress()
+  customPayload: Cell?; // should be null
+  forwardTonAmount: Int as coins; // should be ton("0.01")
+  forwardPayload: Slice as remaining; // should be emptySlice()
 }
+
+const Decimal: Int = 1000000000;
+const StorageFee: Int = ton("0.01");
 
 contract Task3 with Deployable {
   owner: Address;
   aAmount: Int;
   bAmount: Int;
-  jettonAddressA: Address;
-  jettonAddressB: Address;
-  decimal: Int;
+  aJettonAddress: Address;
+  bJettonAddress: Address;
 
-  init(admin: Address, newJettonAddressA: Address, newJettonAddressB: Address) {
+  init(admin: Address, aJettonAddress: Address, bJettonAddress: Address) {
     self.owner = admin;
-    self.jettonAddressA = newJettonAddressA;
-    self.jettonAddressB = newJettonAddressB;
+    self.aJettonAddress = aJettonAddress;
+    self.bJettonAddress = bJettonAddress;
     self.aAmount = 0;
     self.bAmount = 0;
-    self.decimal = 1000000000;
   }
 
   receive(msg: TokenNotification) {
+    require(sender() == self.aJettonAddress || sender() == self.bJettonAddress, "Jetton not supported");
+
+    if(msg.from == self.owner) {
+      if (sender() == self.aJettonAddress) {
+        self.aAmount = self.aAmount + msg.amount;
+      } else {
+        self.bAmount = self.bAmount + msg.amount;
+      }
+      return;
+    }
+
+    if(sender() == self.aJettonAddress) {
+      let toSend: Int = self.price(self.bJettonAddress) * msg.amount / Decimal;
+      if(toSend > self.bAmount) {
+        self.sendJettons(self.aJettonAddress, msg.amount, msg.from);
+        return;
+      }
+      self.sendJettons(self.bJettonAddress, toSend, msg.from);
+      self.aAmount = self.aAmount + msg.amount;
+      self.bAmount = self.bAmount - toSend;
+
+    } else {
+      let toSend: Int = self.price(self.aJettonAddress) * msg.amount / Decimal;
+      if(toSend > self.aAmount) {
+        self.sendJettons(self.bJettonAddress, msg.amount, msg.from);
+        return;
+      }
+      self.sendJettons(self.aJettonAddress, toSend, msg.from);
+      self.aAmount = self.aAmount - toSend;
+      self.bAmount = self.bAmount + msg.amount;
+    }
   } 
+
+  fun sendJettons(jetton: Address, amount: Int, to: Address) {
+    send(SendParameters {
+      to: jetton,
+      bounce: true,
+      value: 0,
+      mode: SendPayGasSeparately + SendIgnoreErrors,
+      body: TokenTransfer {
+        queryId: 0,
+        amount: amount,
+        destination: to,
+        responseDestination: myAddress(),
+        customPayload: null,
+        forwardTonAmount: ton("0.01"),
+        forwardPayload: emptySlice()
+      }.toCell()
+    });
+  }
   
   get fun price(jetton: Address): Int { 
+    if (jetton == self.aJettonAddress) {
+      return self.aAmount * Decimal / self.bAmount;
+    } else {
+      return self.bAmount * Decimal / self.aAmount;
+    }
   }
   
   get fun balance(jetton: Address): Int { 
+    if (jetton == self.aJettonAddress) {
+      return self.aAmount;
+    } else {
+      return self.bAmount;
+    }
   }
 }
