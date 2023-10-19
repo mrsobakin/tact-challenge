@@ -51,8 +51,6 @@ message(0xf8a7ea5) TokenTransfer {
 }
 
 const Decimal: Int = 1000000000;
-const StorageFee: Int = ton("0.01");
-const GasConsumption: Int = ton("0.01");
 
 contract Task3 with Deployable {
   owner: Address;
@@ -82,7 +80,7 @@ contract Task3 with Deployable {
     }
 
     if(sender() == self.aJettonAddress) {
-      let toSend: Int = self.price(self.bJettonAddress) * msg.amount / Decimal;
+      let toSend: Int = self.price(self.aJettonAddress) * msg.amount / Decimal;
       if(toSend == 0 || toSend > self.bAmount) {
         self.sendJettons(self.aJettonAddress, msg.amount, msg.from);
         return;
@@ -92,7 +90,7 @@ contract Task3 with Deployable {
       self.bAmount = self.bAmount - toSend;
 
     } else {
-      let toSend: Int = self.price(self.aJettonAddress) * msg.amount / Decimal;
+      let toSend: Int = self.price(self.bJettonAddress) * msg.amount / Decimal;
       if(toSend == 0 || toSend > self.aAmount) {
         self.sendJettons(self.bJettonAddress, msg.amount, msg.from);
         return;
@@ -106,9 +104,8 @@ contract Task3 with Deployable {
   fun sendJettons(jetton: Address, amount: Int, to: Address) {
     send(SendParameters {
       to: jetton,
-      value: ton("0.03"),
-      mode: SendIgnoreErrors,
-      // mode: SendRemainingValue + SendPayGasSeparately,
+      value: 0,
+      mode: SendRemainingValue,
       body: TokenTransfer {
         queryId: 0,
         amount: amount,
@@ -127,9 +124,9 @@ contract Task3 with Deployable {
     }
 
     if (jetton == self.aJettonAddress) {
-      return self.aAmount * Decimal / self.bAmount;
-    } else {
       return self.bAmount * Decimal / self.aAmount;
+    } else {
+      return self.aAmount * Decimal / self.bAmount;
     }
   }
   
