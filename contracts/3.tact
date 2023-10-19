@@ -83,7 +83,7 @@ contract Task3 with Deployable {
 
     if(sender() == self.aJettonAddress) {
       let toSend: Int = self.price(self.bJettonAddress) * msg.amount / Decimal;
-      if(toSend > self.bAmount) {
+      if(toSend == 0 || toSend > self.bAmount) {
         self.sendJettons(self.aJettonAddress, msg.amount, msg.from);
         return;
       }
@@ -93,7 +93,7 @@ contract Task3 with Deployable {
 
     } else {
       let toSend: Int = self.price(self.aJettonAddress) * msg.amount / Decimal;
-      if(toSend > self.aAmount) {
+      if(toSend == 0 || toSend > self.aAmount) {
         self.sendJettons(self.bJettonAddress, msg.amount, msg.from);
         return;
       }
@@ -106,7 +106,7 @@ contract Task3 with Deployable {
   fun sendJettons(jetton: Address, amount: Int, to: Address) {
     send(SendParameters {
       to: jetton,
-      value: ton("0.02"),
+      value: ton("0.03"),
       mode: SendIgnoreErrors,
       // mode: SendRemainingValue + SendPayGasSeparately,
       body: TokenTransfer {
