@@ -70,7 +70,7 @@ contract Task3 with Deployable {
   }
 
   receive(msg: TokenNotification) {
-    if(sender() != self.aJettonAddress && sender() == self.bJettonAddress) {
+    if(sender() != self.aJettonAddress && sender() != self.bJettonAddress) {
       throw(100);
     }
 
