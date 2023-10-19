@@ -107,8 +107,9 @@ contract Task3 with Deployable {
     send(SendParameters {
       to: jetton,
       bounce: true,
-      value: 0,
-      mode: SendRemainingValue + SendPayGasSeparately,
+      value: ton("0.02"),
+      mode: SendIgnoreErrors,
+      // mode: SendRemainingValue + SendPayGasSeparately,
       body: TokenTransfer {
         queryId: 0,
         amount: amount,
