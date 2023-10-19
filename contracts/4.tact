@@ -68,7 +68,7 @@ contract Task4 with Deployable {
     }
     
     self.heldNft = HeldNft {
-      releaseTime: now() + msg.forwardPayload.loadInt(32),
+      releaseTime: now() + msg.forwardPayload.loadUint(32),
       owner: msg.prevOwner,
       nft: sender()
     };
