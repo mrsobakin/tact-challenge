@@ -57,25 +57,13 @@ contract Task4 with Deployable {
   heldNft: HeldNft?;
   
   init(seed: Int) {
-    self.seed = seed; // needed to deploy multiple smart contracts copies from one admin address
+    self.seed = seed;
+    self.heldNft = null;
   }
 
   receive(msg: OwnershipAssigned) {
     if(self.heldNft != null) {
-      send(SendParameters {
-        to: sender(),
-        bounce: true,
-        value: 0,
-        mode: SendIgnoreErrors + SendRemainingBalance,
-        body: Transfer {
-          queryId: 0,
-          newOwner: msg.prevOwner,
-          responseDestination: msg.prevOwner,
-          customPayload: null,
-          forwardAmount: ton("0"),
-          forwardPayload: emptySlice()
-        }.toCell()
-      });
+      sendNft(sender(), msg.prevOwner, SendRemainingValue);
       return;
     }
     
@@ -93,18 +81,21 @@ contract Task4 with Deployable {
       self.reply("NFT is still locked".asComment());
       return;
     }
+    sendNft((self.heldNft!!).nft, (self.heldNft!!).owner, SendRemainingBalance);
+  }
 
+  fun sendNft(nft: Address, owner: Address, mode: Int) {
     send(SendParameters {
       to: msg.nftAddress,
       bounce: true,
       value: 0,
-      mode: SendIgnoreErrors + SendRemainingBalance,
+      mode: SendIgnoreErrors + mode,
       body: Transfer {
         queryId: 0,
-        newOwner: sender(),
-        responseDestination: sender(),
+        newOwner: owner,
+        responseDestination: owner,
         customPayload: null,
-        forwardAmount: ton("0"),
+        forwardAmount: ton("0.01"),
         forwardPayload: emptySlice()
       }.toCell()
     });
