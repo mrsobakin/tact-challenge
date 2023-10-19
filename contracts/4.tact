@@ -63,7 +63,7 @@ contract Task4 with Deployable {
 
   receive(msg: OwnershipAssigned) {
     if(self.heldNft != null) {
-      self.sendNft(sender(), msg.prevOwner, SendRemainingValue);
+      self.sendNft(sender(), msg.prevOwner);
       return;
     }
     
@@ -84,16 +84,16 @@ contract Task4 with Deployable {
       return;
     }
 
-    self.sendNft((self.heldNft!!).nft, (self.heldNft!!).owner, SendRemainingBalance);
+    self.sendNft((self.heldNft!!).nft, (self.heldNft!!).owner);
     self.heldNft = null;
   }
 
-  fun sendNft(nft: Address, owner: Address, mode: Int) {
+  fun sendNft(nft: Address, owner: Address) {
     send(SendParameters {
       to: nft,
       bounce: true,
       value: 0,
-      mode: SendIgnoreErrors + mode,
+      mode: SendIgnoreErrors + SendRemainingValue,
       body: Transfer {
         queryId: 0,
         newOwner: owner,
