@@ -68,36 +68,34 @@ contract Task3 with Deployable {
   }
 
   receive(msg: TokenNotification) {
-    require(sender() == self.aJettonAddress || sender() == self.bJettonAddress, "Jetton not supported");
-
-    if(msg.from == self.owner) {
-      if (sender() == self.aJettonAddress) {
+    if(sender() == self.aJettonAddress) {
+      if (msg.from != self.owner) {
+        let toSend: Int = (self.bAmount * Decimal / self.aAmount) * msg.amount / Decimal;
+        if(toSend == 0 || toSend > self.bAmount) {
+          self.sendJettons(self.aJettonAddress, msg.amount, msg.from);
+          return;
+        }
+        self.sendJettons(self.bJettonAddress, toSend, msg.from);
         self.aAmount = self.aAmount + msg.amount;
+        self.bAmount = self.bAmount - toSend;
+      } else {
+        self.aAmount = self.aAmount + msg.amount;
+      }
+    } else if(sender() == self.bJettonAddress) {
+      if (msg.from != self.owner) {
+        let toSend: Int = (self.aAmount * Decimal / self.bAmount) * msg.amount / Decimal;
+        if(toSend == 0 || toSend > self.aAmount) {
+          self.sendJettons(self.bJettonAddress, msg.amount, msg.from);
+          return;
+        }
+        self.sendJettons(self.aJettonAddress, toSend, msg.from);
+        self.aAmount = self.aAmount - toSend;
+        self.bAmount = self.bAmount + msg.amount;
       } else {
         self.bAmount = self.bAmount + msg.amount;
       }
-      return;
-    }
-
-    if(sender() == self.aJettonAddress) {
-      let toSend: Int = self.price(self.aJettonAddress) * msg.amount / Decimal;
-      if(toSend == 0 || toSend > self.bAmount) {
-        self.sendJettons(self.aJettonAddress, msg.amount, msg.from);
-        return;
-      }
-      self.sendJettons(self.bJettonAddress, toSend, msg.from);
-      self.aAmount = self.aAmount + msg.amount;
-      self.bAmount = self.bAmount - toSend;
-
     } else {
-      let toSend: Int = self.price(self.bJettonAddress) * msg.amount / Decimal;
-      if(toSend == 0 || toSend > self.aAmount) {
-        self.sendJettons(self.bJettonAddress, msg.amount, msg.from);
-        return;
-      }
-      self.sendJettons(self.aJettonAddress, toSend, msg.from);
-      self.aAmount = self.aAmount - toSend;
-      self.bAmount = self.bAmount + msg.amount;
+      throw(42);
     }
   } 
 
