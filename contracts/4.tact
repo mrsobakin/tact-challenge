@@ -86,14 +86,14 @@ contract Task4 with Deployable {
 
   fun sendNft(nft: Address, owner: Address, mode: Int) {
     send(SendParameters {
-      to: msg.nftAddress,
+      to: nft,
       bounce: true,
       value: 0,
       mode: SendIgnoreErrors + mode,
       body: Transfer {
         queryId: 0,
         newOwner: owner,
-        responseDestination: owner,
+        responseDestination: myAddress(),
         customPayload: null,
         forwardAmount: ton("0.01"),
         forwardPayload: emptySlice()
