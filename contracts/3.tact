@@ -41,136 +41,38 @@ message(0x7362d09c) TokenNotification {
 
 // To simplify the testing process and the specificity of the messages being sent, we decided to add clear default values in this transaction
 message(0xf8a7ea5) TokenTransfer {
-    queryId: Int as uint64; // should be 0
-    amount: Int as coins; // should be amount of jettons to send
-    destination: Address; // should be user address / TokenNotification.from
-    responseDestination: Address?; // should be myAddress()
-    customPayload: Cell?; // should be null
-    forwardTonAmount: Int as coins; // should be ton("0.01")
-    forwardPayload: Slice as remaining; // should be emptySlice()
+     queryId: Int as uint64; // should be 0
+     amount: Int as coins; // should be amount of jettons to send
+     destination: Address; // should be user address / TokenNotification.from
+     responseDestination: Address?; // should be myAddress()
+     customPayload: Cell?; // should be null
+     forwardTonAmount: Int as coins; // should be ton("0.01")
+     forwardPayload: Slice as remaining; // should be emptySlice()
 }
 
 contract Task3 with Deployable {
-    owner: Address;
-    aAmount: Int;
-    bAmount: Int;
-    jettonAddressA: Address;
-    jettonAddressB: Address;
-    decimal: Int;
+  owner: Address;
+  aAmount: Int;
+  bAmount: Int;
+  jettonAddressA: Address;
+  jettonAddressB: Address;
+  decimal: Int;
 
-    init(admin: Address, newJettonAddressA: Address, newJettonAddressB: Address) {
-        self.owner = admin;
-        self.jettonAddressA = newJettonAddressA;
-        self.jettonAddressB = newJettonAddressB;
-        self.aAmount = 0;
-        self.bAmount = 0;
-        self.decimal = 1000000000;
-    }
+  init(admin: Address, newJettonAddressA: Address, newJettonAddressB: Address) {
+    self.owner = admin;
+    self.jettonAddressA = newJettonAddressA;
+    self.jettonAddressB = newJettonAddressB;
+    self.aAmount = 0;
+    self.bAmount = 0;
+    self.decimal = 1000000000;
+  }
 
-    receive() { }
-    receive(msg: Slice) { }
-
-    receive(msg: TokenNotification) {
-        if (msg.from == self.owner) {
-            if (sender() == self.jettonAddressA) {
-                self.aAmount = self.aAmount + msg.amount;
-            } else if (sender() == self.jettonAddressB) {
-                self.bAmount = self.bAmount + msg.amount;
-            }
-            return;
-        }
-
-        let toSend: Int = 0;
-        let addr: Address = self.jettonAddressB;
-        if (sender() == self.jettonAddressA) {
-            require(self.aAmount != 0, "Cannot calculate the price");
-            toSend = (self.bAmount * self.decimal / self.aAmount) * msg.amount / self.decimal;
-
-            if (toSend > self.bAmount) {
-                send(SendParameters{
-                    to: sender(),
-                    bounce: true,
-                    value: 0,
-                    mode: SendRemainingValue + SendIgnoreErrors,
-                    body: TokenTransfer {
-                        queryId: 0,
-                        amount: msg.amount,
-                        destination: msg.from,
-                        responseDestination: myAddress(),
-                        customPayload: null,
-                        forwardTonAmount: ton("0.01"),
-                        forwardPayload: emptySlice()
-                    }.toCell()   
-                });
-                return;
-            }
-
-            self.bAmount = self.bAmount - toSend;
-            self.aAmount = self.aAmount + msg.amount;
-        } else if (sender() == self.jettonAddressB) {
-            require(self.bAmount != 0, "Cannot calculate the price");
-            toSend = (self.aAmount * self.decimal / self.bAmount) * msg.amount / self.decimal;
-
-            if (toSend > self.aAmount) {
-                send(SendParameters{
-                    to: sender(),
-                    bounce: true,
-                    value: 0,
-                    mode: SendRemainingValue + SendIgnoreErrors,
-                    body: TokenTransfer {
-                        queryId: 0,
-                        amount: msg.amount,
-                        destination: msg.from,
-                        responseDestination: myAddress(),
-                        customPayload: null,
-                        forwardTonAmount: ton("0.01"),
-                        forwardPayload: emptySlice()
-                    }.toCell()   
-                });
-                return;
-            }
-
-            self.aAmount = self.aAmount - toSend;
-            self.bAmount = self.bAmount + msg.amount;
-            addr = self.jettonAddressA;
-        } else {
-            require(false, "Invalid address");
-        }
-
-        send(SendParameters{
-            to: addr,
-            bounce: true,
-            value: 0,
-            mode: SendRemainingValue + SendIgnoreErrors,
-            body: TokenTransfer {
-                queryId: 0,
-                amount: toSend,
-                destination: msg.from,
-                responseDestination: myAddress(),
-                customPayload: null,
-                forwardTonAmount: ton("0.01"),
-                forwardPayload: emptySlice()
-            }.toCell()   
-        });
-    } 
-    
-    get fun price(jetton: Address): Int { 
-        if (self.aAmount == 0 || self.bAmount == 0) {
-            return 0;
-        }
-
-        if (jetton == self.jettonAddressA) {
-            return self.aAmount * self.decimal / self.bAmount;
-        } else {
-            return self.bAmount * self.decimal / self.aAmount;
-        }
-    }
-    
-    get fun balance(jetton: Address): Int { 
-        if (jetton == self.jettonAddressA) {
-            return self.aAmount;
-        } else {
-            return self.bAmount;
-        }
-    }
+  receive(msg: TokenNotification) {
+  } 
+  
+  get fun price(jetton: Address): Int { 
+  }
+  
+  get fun balance(jetton: Address): Int { 
+  }
 }
