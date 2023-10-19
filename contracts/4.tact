@@ -106,7 +106,12 @@ contract Task4 with Deployable {
     if(self.heldNft == null) {
       return 0;
     }
-    return now() - (self.heldNft!!).releaseTime;
+    let untilRelease: Int = (self.heldNft!!).releaseTime - now();
+    if(untilRelease >= 0) {
+      return untilRelease;
+    } else {
+      return 0;
+    }
   }
 
   get fun nft(): Address? {
