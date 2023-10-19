@@ -82,6 +82,7 @@ contract Task4 with Deployable {
       return;
     }
     self.sendNft((self.heldNft!!).nft, (self.heldNft!!).owner, SendRemainingBalance);
+    self.heldNft = null;
   }
 
   fun sendNft(nft: Address, owner: Address, mode: Int) {
