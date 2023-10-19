@@ -52,6 +52,7 @@ message(0xf8a7ea5) TokenTransfer {
 
 const Decimal: Int = 1000000000;
 const StorageFee: Int = ton("0.01");
+const GasConsumption: Int = ton("0.01");
 
 contract Task3 with Deployable {
   owner: Address;
@@ -103,11 +104,16 @@ contract Task3 with Deployable {
   } 
 
   fun sendJettons(jetton: Address, amount: Int, to: Address) {
+    let msgValue: Int = context().value;
+    let tonBalanceBeforeMsg: Int = myBalance() - msgValue;
+    let storageFee: Int = StorageFee - min(tonBalanceBeforeMsg, StorageFee);
+    msgValue = msgValue - (storageFee + GasConsumption);
+    
     send(SendParameters {
       to: jetton,
       bounce: true,
-      value: 0,
-      mode: SendPayGasSeparately + SendIgnoreErrors,
+      value: msgValue,
+      mode: SendIgnoreErrors,
       body: TokenTransfer {
         queryId: 0,
         amount: amount,
