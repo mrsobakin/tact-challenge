@@ -63,7 +63,7 @@ contract Task4 with Deployable {
 
   receive(msg: OwnershipAssigned) {
     if(self.heldNft != null) {
-      sendNft(sender(), msg.prevOwner, SendRemainingValue);
+      self.sendNft(sender(), msg.prevOwner, SendRemainingValue);
       return;
     }
     
@@ -81,7 +81,7 @@ contract Task4 with Deployable {
       self.reply("NFT is still locked".asComment());
       return;
     }
-    sendNft((self.heldNft!!).nft, (self.heldNft!!).owner, SendRemainingBalance);
+    self.sendNft((self.heldNft!!).nft, (self.heldNft!!).owner, SendRemainingBalance);
   }
 
   fun sendNft(nft: Address, owner: Address, mode: Int) {
