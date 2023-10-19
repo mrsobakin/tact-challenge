@@ -103,7 +103,7 @@ contract Task4 with Deployable {
         newOwner: owner,
         responseDestination: owner,
         customPayload: null,
-        forwardAmount: 0,
+        forwardAmount: value,
         forwardPayload: emptySlice()
       }.toCell()
     });
