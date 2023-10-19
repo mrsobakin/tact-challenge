@@ -106,7 +106,6 @@ contract Task3 with Deployable {
   fun sendJettons(jetton: Address, amount: Int, to: Address) {
     send(SendParameters {
       to: jetton,
-      bounce: true,
       value: ton("0.02"),
       mode: SendIgnoreErrors,
       // mode: SendRemainingValue + SendPayGasSeparately,
@@ -123,6 +122,10 @@ contract Task3 with Deployable {
   }
   
   get fun price(jetton: Address): Int { 
+    if (self.aAmount == 0 || self.bAmount == 0) {
+      return 0;
+    }
+
     if (jetton == self.aJettonAddress) {
       return self.aAmount * Decimal / self.bAmount;
     } else {
