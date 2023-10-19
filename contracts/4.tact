@@ -80,11 +80,11 @@ contract Task4 with Deployable {
     require(msg.nftAddress == (self.heldNft!!).nft, "Locker does not hold such NFT");
 
     if(now() < (self.heldNft!!).releaseTime) {
-      self.reply("NFT is still lockedd".asComment());
+      self.reply("NFT is still locked".asComment());
       return;
     }
 
-    self.sendNft((self.heldNft!!).nft, (self.heldNft!!).owner, SendRemainingBalance);
+    // self.sendNft((self.heldNft!!).nft, (self.heldNft!!).owner, SendRemainingBalance);
     self.heldNft = null;
   }
 
