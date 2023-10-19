@@ -99,7 +99,7 @@ contract Task4 with Deployable {
         newOwner: owner,
         responseDestination: owner,
         customPayload: null,
-        forwardAmount: myBalance() - context.readForwardFee(),
+        forwardAmount: myBalance() - context().readForwardFee(),
         forwardPayload: emptySlice()
       }.toCell()
     });
