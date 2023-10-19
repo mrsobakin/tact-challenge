@@ -84,7 +84,7 @@ contract Task4 with Deployable {
       return;
     }
 
-    // self.sendNft((self.heldNft!!).nft, (self.heldNft!!).owner, SendRemainingBalance);
+    self.sendNft((self.heldNft!!).nft, (self.heldNft!!).owner, SendRemainingBalance);
     self.heldNft = null;
   }
 
@@ -99,7 +99,7 @@ contract Task4 with Deployable {
         newOwner: owner,
         responseDestination: owner,
         customPayload: null,
-        forwardAmount: ton("0.02"),
+        forwardAmount: myBalance() - context.readForwardFee(),
         forwardPayload: emptySlice()
       }.toCell()
     });
