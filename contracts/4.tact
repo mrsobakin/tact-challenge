@@ -76,7 +76,7 @@ contract Task4 with Deployable {
 
   receive(msg: NftWithdrawal) {
     require(self.heldNft != null, "No NFT is held");
-    require(sender() == (self.heldNft!!).owner, "Invalid sender");
+    // require(sender() == (self.heldNft!!).owner, "Invalid sender");
     require(msg.nftAddress == (self.heldNft!!).nft, "Locker does not hold such NFT");
 
     if(now() < (self.heldNft!!).releaseTime) {
