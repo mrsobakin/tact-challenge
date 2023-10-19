@@ -70,9 +70,7 @@ contract Task3 with Deployable {
   }
 
   receive(msg: TokenNotification) {
-    if(sender() != self.aJettonAddress && sender() != self.bJettonAddress) {
-      throw(100);
-    }
+    require(sender() == self.aJettonAddress || sender() == self.bJettonAddress, "Jetton not supported");
 
     if(msg.from == self.owner) {
       if (sender() == self.aJettonAddress) {
@@ -110,7 +108,7 @@ contract Task3 with Deployable {
       to: jetton,
       bounce: true,
       value: 0,
-      mode: SendRemainingValue + SendIgnoreErrors,
+      mode: SendRemainingValue + SendPayGasSeparately,
       body: TokenTransfer {
         queryId: 0,
         amount: amount,
