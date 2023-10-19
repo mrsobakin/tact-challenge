@@ -87,7 +87,7 @@ contract Task4 with Deployable {
     self.sendNft(
       (self.heldNft!!).nft, 
       (self.heldNft!!).owner, 
-      context().value - context().readForwardFee()
+      context().value - 2 * context().readForwardFee()
     );
     self.heldNft = null;
   }
