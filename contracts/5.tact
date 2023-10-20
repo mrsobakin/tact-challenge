@@ -146,13 +146,13 @@ contract Task5 with Deployable {
 
   receive(msg: InternalDrainNFTs) {
     require(myAddress() == sender(), "This is an internal contract");
-    repeat(min(200, self.nftsCount)) {
+    repeat(min(100, self.nftsCount)) {
       self.nftsCount = self.nftsCount - 1;
       send(SendParameters {
         to: self.nfts.get(self.nftsCount)!!,
         bounce: true,
-        value: ton("0.08"),
-        mode: SendIgnoreErrors,
+        value: 0,
+        mode: SendIgnoreErrors + SendPayGasSeparately,
         body: Transfer {
           queryId: msg.queryId,
           newOwner: self.owner,
