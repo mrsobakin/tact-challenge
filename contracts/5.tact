@@ -124,7 +124,7 @@ contract Task5 with Deployable {
     
     nativeReserve(ton("2"), 0);
     send(SendParameters {
-      to: sender(),
+      to: nft,
       value: 0,
       mode: SendIgnoreErrors + SendRemainingValue,
       body: Transfer {
