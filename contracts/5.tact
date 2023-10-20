@@ -76,10 +76,24 @@ contract Task5 with Deployable {
     self.nftsCount = 0;
   }
 
+  inline fun addNft(nft: Address) {
+    self.nfts.set(self.nftsCount, nft);
+    self.nftsCount = self.nftsCount + 1;
+  }
+
+  inline fun casinoSwapNft(new_nft: Address) {
+    let i: Int = random(0, self.nftsCount);
+    if (i == self.nftsCount) {
+      return new_nft;
+    }
+    let temp: Address = self.nfts.get(i)!!;
+    self.nfts.set(i, self.nfts.get(self.nftsCount - 1));
+    return temp;
+  }
+
   receive(msg: OwnershipAssigned) {
     if(msg.prevOwner == self.owner) {
-      self.nfts.set(self.nftsCount, sender());
-      self.nftsCount = self.nftsCount + 1;
+      addNft(sender());
       return;
     }
 
@@ -91,7 +105,7 @@ contract Task5 with Deployable {
       return;
     }
 
-    let nft: Address = self.pop(random(0, self.nftsCount));
+    let nft: Address = self.casinoSwapNft(sender());
     
     nativeReserve(ton("2"), 0);
     self.sendNft(nft, msg.prevOwner);
