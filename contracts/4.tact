@@ -48,8 +48,8 @@ message NftWithdrawal {
 contract Task4 with Deployable {
   seed: Int as uint128;
   releaseTime: Int as uint32;
-  owner: Address?;
-  nft: Address?;
+  owner: Address;
+  nft: Address;
   
   init(seed: Int) {
     self.seed = seed;
@@ -70,9 +70,9 @@ contract Task4 with Deployable {
   }
 
   receive(msg: NftWithdrawal) {
-    require(self.releaseTime != 0, "");
-    require(sender() == self.owner, "");
-    require(msg.nftAddress == self.nft, "");
+    nativeThrowUnless(100, self.releaseTime != 0);
+    nativeThrowUnless(100, sender() == self.owner);
+    nativeThrowUnless(100, msg.nftAddress == self.nft);
 
     if(now() < self.releaseTime) {
       self.reply("NFT is still locked".asComment());
