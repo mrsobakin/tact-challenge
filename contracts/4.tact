@@ -1,3 +1,4 @@
+import "@stdlib/deploy";
 /*
   TASK 4 - NFT locker
   Implement a smart contract that will lock NFT for a period of time specified by the owner.
@@ -50,11 +51,7 @@ struct HeldNft {
   nft: Address;
 }
 
-message Deploy {
-  queryId: Int as uint64;
-}
-
-contract Task4 {
+contract Task4 with Deployable {
   seed: Int as uint128;
   heldNft: HeldNft?;
   
@@ -62,8 +59,6 @@ contract Task4 {
     self.seed = seed;
     self.heldNft = null;
   }
-
-  receive(msg: Deploy) { }
 
   receive(msg: OwnershipAssigned) {
     if(self.heldNft != null) {
