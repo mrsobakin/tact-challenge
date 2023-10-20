@@ -76,11 +76,9 @@ contract Task3 with Deployable {
           return;
         }
         self.sendJettons(self.bJettonAddress, toSend, msg.from);
-        self.aAmount = self.aAmount + msg.amount;
         self.bAmount = self.bAmount - toSend;
-      } else {
-        self.aAmount = self.aAmount + msg.amount;
       }
+      self.aAmount = self.aAmount + msg.amount;
     } else if(sender() == self.bJettonAddress) {
       if (msg.from != self.owner) {
         let toSend: Int = (self.aAmount * Decimal / self.bAmount) * msg.amount / Decimal;
@@ -90,10 +88,8 @@ contract Task3 with Deployable {
         }
         self.sendJettons(self.aJettonAddress, toSend, msg.from);
         self.aAmount = self.aAmount - toSend;
-        self.bAmount = self.bAmount + msg.amount;
-      } else {
-        self.bAmount = self.bAmount + msg.amount;
       }
+      self.bAmount = self.bAmount + msg.amount;
     } else {
       throw(42);
     }
