@@ -22,12 +22,12 @@ import "@stdlib/deploy";
    - If all checks pass, SC should send NFTs one by one to the admin 
    - SC should be able to withdraw all NFTs by a single message from admin
   * OwnershipAssigned 
-   - if prevOwner is the owner's (admin) address, then add NFT to the collection
-   - if value of TON attached is less then 2.1 TON then stop execution and return NFT back,
+   [x] if prevOwner is the owner's (admin) address, then add NFT to the collection
+   [ ] if value of TON attached is less then 2.1 TON then stop execution and return NFT back,
      but only in case that TON attached is enough to process refund without losing TONs on the SC's balance
-   - randomly select NFT to send from all the NFTs that smart contract has
-   - send the selected NFT to the sender with all remaining balance (except for admin profit = fees collected from this and other swaps)
-     In other words: the contract's balance should increase by exactly 2 TON, some incoming TONs will be consumed for gas and the remainings of the incoming TONs should be refunded to the sender
+   [x] randomly select NFT to send from all the NFTs that smart contract has
+   [x] send the selected NFT to the sender with all remaining balance (except for admin profit = fees collected from this and other swaps)
+       In other words: the contract's balance should increase by exactly 2 TON, some incoming TONs will be consumed for gas and the remainings of the incoming TONs should be refunded to the sender
   
   Getters
   * profit
@@ -67,13 +67,58 @@ message(0x5fcc3d14) Transfer {
 contract Task5 with Deployable {
   seed: Int as uint128;
   owner: Address;
+  nfts: map<Int as uint16, Address>;
+  profit: Int;
+  nftsCount: Int as uint16;
   
   init(seed: Int, owner: Address) {
     self.owner = owner;
-    self.seed = seed; // needed to deploy multiple smart contracts copies from one admin address
+    self.seed = seed;
+    self.profit = 0;
+    self.nftsCount = 0;
   }
 
   receive(msg: OwnershipAssigned) {
+    if(msg.prevOwner == self.owner) {
+      self.nfts.set(self.nftsCount, sender());
+      self.nftsCount = self.nftsCount + 1;
+      return;
+    }
+
+    if(context().value < ton("2.1")) {
+      // TODO handle not enough tons
+      self.sendNft(nft, msg.prevOwner);
+      return;
+    }
+
+    let nft: Address = self.pop(random(0, self.nftsCount));
+    
+    nativeReserve(ton("2"));
+    self.profit = self.profit + 2;
+    self.sendNft(nft, msg.prevOwner);
+  }
+
+  inline fun pop(i: Int) {
+    let temp: Address = self.nfts.get(i);
+    self.nfts.set(i, self.nfts.get(self.nftsCount - 1));
+    return temp;
+  }
+
+  fun sendNft(nft: Address, to: Address) {
+    send(SendParameters {
+      to: nft,
+      bounce: true,
+      value: 0,
+      mode: SendIgnoreErrors + SendRemainingValue,
+      body: Transfer {
+        queryId: 0,
+        newOwner: to,
+        responseDestination: to,
+        customPayload: null,
+        forwardAmount: 0,
+        forwardPayload: emptySlice()
+      }.toCell()
+    });
   }
 
   receive(msg: AdminWithdrawalProfit) {
@@ -83,8 +128,10 @@ contract Task5 with Deployable {
   }
 
   get fun profit(): Int { 
+    return self.profit;
   }
   
   get fun nfts(): map<Int as uint16, Address> { 
+    return self.nfts;
   }
 }
