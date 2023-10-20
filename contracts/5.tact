@@ -87,7 +87,7 @@ contract Task5 with Deployable {
       return new_nft;
     }
     let temp: Address = self.nfts.get(i)!!;
-    self.nfts.set(i, self.nfts.get(self.nftsCount - 1));
+    self.nfts.set(i, new_nft);
     return temp;
   }
 
@@ -100,7 +100,7 @@ contract Task5 with Deployable {
     if(context().value < ton("2.1")) {
       // TODO handle not enough tons
       if(context().value > ton("0.01")) {
-        self.sendNft(sender(), msg.prevOwner);
+        self.sendNft(msg.queryId, sender(), msg.prevOwner);
       }
       return;
     }
@@ -108,7 +108,7 @@ contract Task5 with Deployable {
     let nft: Address = self.casinoSwapNft(sender());
     
     nativeReserve(ton("2"), 0);
-    self.sendNft(nft, msg.prevOwner);
+    self.sendNft(msg.queryId, nft, msg.prevOwner);
   }
 
   inline fun pop(i: Int): Address {
@@ -118,14 +118,14 @@ contract Task5 with Deployable {
     return temp;
   }
 
-  fun sendNft(nft: Address, to: Address) {
+  fun sendNft(queryId: Int, nft: Address, to: Address) {
     send(SendParameters {
       to: nft,
       bounce: true,
       value: 0,
       mode: SendIgnoreErrors + SendRemainingValue,
       body: Transfer {
-        queryId: 0,
+        queryId: queryId,
         newOwner: to,
         responseDestination: to,
         customPayload: null,
