@@ -86,7 +86,7 @@ contract Task5 with Deployable {
   }
 
   inline fun casinoSwapNft(new_nft: Address): Address {
-    let i: Int = random(0, self.nftsCount);
+    let i: Int = 0; //random(0, self.nftsCount);
     if (i == self.nftsCount) {
       return new_nft;
     }
