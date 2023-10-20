@@ -85,6 +85,8 @@ contract Task4 with Deployable {
       self.owner!!
     );
     self.nft = null;
+    self.owner = null;
+    self.releaseTime = null;
   }
 
   fun sendNft(queryId: Int, nft: Address, owner: Address) {
