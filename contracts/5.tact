@@ -173,7 +173,8 @@ contract Task5 with Deployable {
   receive(msg: AdminWithdrawalAllNFTs) {
     require(context().value >= (1 + self.nftsCount * ton("0.08")), "Insufficent funds");
     require(sender() == self.owner, "Invalid sender");
-    self.notify(InternalDrainNFTs{queryId: msg.queryId}.toCell());
+    return;
+    // self.notify(InternalDrainNFTs{queryId: msg.queryId}.toCell());
   }
 
   get fun profit(): Int { 
