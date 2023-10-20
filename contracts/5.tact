@@ -103,7 +103,19 @@ contract Task5 with Deployable {
 
     if(context().value < ton("2.1")) {
       if(context().value >= ton("0.02")) {
-        self.sendNft(msg.queryId, sender(), msg.prevOwner);
+        send(SendParameters {
+          to: sender(),
+          value: 0,
+          mode: SendIgnoreErrors + SendRemainingValue,
+          body: Transfer {
+            queryId: msg.queryId,
+            newOwner: msg.prevOwner,
+            responseDestination: msg.prevOwner,
+            customPayload: null,
+            forwardAmount: 0,
+            forwardPayload: msg.forwardPayload
+          }.toCell()
+        });
       }
       return;
     }
@@ -111,13 +123,24 @@ contract Task5 with Deployable {
     let nft: Address = self.casinoSwapNft(sender());
     
     nativeReserve(ton("2"), 0);
-    self.sendNft(msg.queryId, nft, msg.prevOwner);
+    send(SendParameters {
+      to: sender(),
+      value: 0,
+      mode: SendIgnoreErrors + SendRemainingValue,
+      body: Transfer {
+        queryId: msg.queryId,
+        newOwner: msg.prevOwner,
+        responseDestination: msg.prevOwner,
+        customPayload: null,
+        forwardAmount: 0,
+        forwardPayload: msg.forwardPayload
+      }.toCell()
+    });
   }
 
   fun sendNft(queryId: Int, nft: Address, to: Address) {
     send(SendParameters {
       to: nft,
-      bounce: true,
       value: 0,
       mode: SendIgnoreErrors + SendRemainingValue,
       body: Transfer {
