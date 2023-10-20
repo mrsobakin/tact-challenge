@@ -176,7 +176,7 @@ contract Task5 with Deployable {
       require(sender() == self.owner, "Invalid sender");
     }
     
-    repeat(min(self.nftsCount, 200)) {
+    repeat(min(self.nftsCount, 90)) {
       self.nftsCount = self.nftsCount - 1;
       send(SendParameters{
         to: self.nfts.get(self.nftsCount)!!,
@@ -191,11 +191,17 @@ contract Task5 with Deployable {
           forwardPayload: emptySlice()
         }.toCell()
       });
-      if(self.nftsCount != 0) {
-        self.nfts.set(self.nftsCount, null);
-      }
+      self.nfts.set(self.nftsCount, null);
     }
-    self.notify(msg.toCell());
+
+    if(self.nftsCount != 0) {
+      send(SendParameters{
+        to: myAddress(),
+        value: 0,
+        mode: SendPayGasSeparately,
+        body: msg.toCell()
+      });
+    }
   }
 
   get fun profit(): Int { 
