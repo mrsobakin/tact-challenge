@@ -87,7 +87,7 @@ contract Task4 with Deployable {
     self.releaseTime = 0;
   }
 
-  fun sendNft(queryId: Int, nft: Address, owner: Address) {
+  inline fun sendNft(queryId: Int, nft: Address, owner: Address) {
     send(SendParameters {
       to: nft,
       bounce: true,
