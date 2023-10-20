@@ -49,6 +49,10 @@ message AdminFetchProfit {
   queryId: Int as uint64;
 }
 
+message InternalDrainNFTs {
+  queryId: Int as uint64;
+}
+
 message(0x05138d91) OwnershipAssigned {
     queryId: Int as uint64;
     prevOwner: Address;
@@ -98,9 +102,9 @@ contract Task5 with Deployable {
     }
 
     if(context().value < ton("2.1")) {
-      // if(context().value >= ton("0.08")) {
-      nativeReserve(context().value, 1);
-      self.sendNft(msg.queryId, sender(), msg.prevOwner);
+      if(context().value >= ton("0.08")) {
+        self.sendNft(msg.queryId, sender(), msg.prevOwner);
+      }
       return;
     }
 
@@ -137,15 +141,13 @@ contract Task5 with Deployable {
     });
   }
 
-  receive(msg: AdminWithdrawalAllNFTs) {
-    require(context().value >= (1 + self.nftsCount * ton("0.08")), "Insufficent funds");
-    require(sender() == self.owner, "Invalid sender");
-    let i: Int = 0;
-    repeat(self.nftsCount - 1) {
+  receive(msg: InternalDrainNFTs) {
+    repeat(min(250, self.nftsCount)) {
+      self.nftsCount = self.nftsCount - 1;
       send(SendParameters {
-        to: self.nfts.get(i)!!,
+        to: self.nfts.get(self.nftsCount)!!,
         bounce: true,
-        value: 0, //ton("0.08"),
+        value: 0,
         mode: SendPayGasSeparately + SendIgnoreErrors,
         body: Transfer {
           queryId: msg.queryId,
@@ -156,10 +158,17 @@ contract Task5 with Deployable {
           forwardPayload: emptySlice()
         }.toCell()
       });     
-      self.nfts.set(i, null);
-      i = i + 1;
     }
-    self.nftsCount = 0;
+
+    if(self.nftsCount != 0) {
+      self.notify(InternalDrainNFTs{queryId: msg.queryId}.toCell());
+    }
+  }
+
+  receive(msg: AdminWithdrawalAllNFTs) {
+    require(context().value >= (1 + self.nftsCount * ton("0.08")), "Insufficent funds");
+    require(sender() == self.owner, "Invalid sender");
+    self.notify(InternalDrainNFTs{queryId: msg.queryId}.toCell());
   }
 
   get fun profit(): Int { 
