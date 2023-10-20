@@ -108,7 +108,7 @@ contract Task3 with Deployable {
       body: TokenTransfer {
         queryId: 0,
         amount: howMuch,
-        destination: to,
+        destination: msg.from,
         responseDestination: myAddress(),
         customPayload: null,
         forwardTonAmount: ton("0.01"),
