@@ -63,7 +63,7 @@ contract Task4 with Deployable {
 
   receive(msg: OwnershipAssigned) {
     if(self.heldNft != null) {
-      self.sendNft(msg.queryId, sender(), msg.prevOwner, 0);
+      self.sendNft(msg.queryId, sender(), msg.prevOwner);
       return;
     }
     
@@ -87,13 +87,12 @@ contract Task4 with Deployable {
     self.sendNft(
       msg.queryId,
       (self.heldNft!!).nft, 
-      (self.heldNft!!).owner, 
-      context().value - 2 * context().readForwardFee()
+      (self.heldNft!!).owner
     );
     self.heldNft = null;
   }
 
-  fun sendNft(queryId: Int, nft: Address, owner: Address, value: Int) {
+  fun sendNft(queryId: Int, nft: Address, owner: Address) {
     send(SendParameters {
       to: nft,
       bounce: true,
@@ -104,7 +103,7 @@ contract Task4 with Deployable {
         newOwner: owner,
         responseDestination: owner,
         customPayload: null,
-        forwardAmount: value,
+        forwardAmount: 0,
         forwardPayload: emptySlice()
       }.toCell()
     });
