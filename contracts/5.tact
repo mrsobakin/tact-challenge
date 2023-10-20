@@ -49,9 +49,9 @@ message AdminFetchProfit {
   queryId: Int as uint64;
 }
 
-message InternalDrainNFTs {
-  queryId: Int as uint64;
-}
+// message InternalDrainNFTs {
+//   queryId: Int as uint64;
+// }
 
 message(0x05138d91) OwnershipAssigned {
     queryId: Int as uint64;
@@ -144,37 +144,51 @@ contract Task5 with Deployable {
     });
   }
 
-  receive(msg: InternalDrainNFTs) {
-    require(myAddress() == sender(), "This is an internal contract");
-    repeat(min(100, self.nftsCount)) {
-      self.nftsCount = self.nftsCount - 1;
-      send(SendParameters {
-        to: self.nfts.get(self.nftsCount)!!,
-        bounce: true,
-        value: 0,
-        mode: SendIgnoreErrors + SendPayGasSeparately,
-        body: Transfer {
-          queryId: msg.queryId,
-          newOwner: self.owner,
-          responseDestination: self.owner,
-          customPayload: null,
-          forwardAmount: 0,
-          forwardPayload: emptySlice()
-        }.toCell()
-      });
-      self.nfts.set(self.nftsCount, null);
-    }
+  // receive(msg: InternalDrainNFTs) {
+  //   require(myAddress() == sender(), "This is an internal contract");
+  //   repeat(min(100, self.nftsCount)) {
+  //     self.nftsCount = self.nftsCount - 1;
+  //     send(SendParameters {
+  //       to: self.nfts.get(self.nftsCount)!!,
+  //       bounce: true,
+  //       value: 0,
+  //       mode: SendIgnoreErrors + SendPayGasSeparately,
+  //       body: Transfer {
+  //         queryId: msg.queryId,
+  //         newOwner: self.owner,
+  //         responseDestination: self.owner,
+  //         customPayload: null,
+  //         forwardAmount: 0,
+  //         forwardPayload: emptySlice()
+  //       }.toCell()
+  //     });
+  //     self.nfts.set(self.nftsCount, null);
+  //   }
 
-    if(self.nftsCount != 0) {
-      self.notify(InternalDrainNFTs{queryId: msg.queryId}.toCell());
-    }
-  }
+  //   if(self.nftsCount != 0) {
+  //     self.notify(InternalDrainNFTs{queryId: msg.queryId}.toCell());
+  //   }
+  // }
 
   receive(msg: AdminWithdrawalAllNFTs) {
     require(context().value >= (1 + self.nftsCount * ton("0.08")), "Insufficent funds");
-    require(sender() == self.owner, "Invalid sender");
-    return;
-    // self.notify(InternalDrainNFTs{queryId: msg.queryId}.toCell());
+    require(sender() == self.owner || sender() == myAddress(), "Invalid sender");
+    
+    repeat(min(self.nftsCount, 100)) {
+      self.nftsCount = self.nftsCount - 1;
+      send(SendParameters{
+        queryId: msg.queryId,
+        newOwner: self.owner,
+        responseDestination: myAddress(),
+        customPayload: null,
+        forwardAmount: 0,
+        forwardPayload: emptySlice()
+      });
+      if(self.nftsCount != 0) {
+        self.nfts.set(self.nftsCount, null);
+      }
+    }
+    self.notify(msg.toCell());
   }
 
   get fun profit(): Int { 
