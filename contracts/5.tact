@@ -87,19 +87,19 @@ contract Task5 with Deployable {
 
     if(context().value < ton("2.1")) {
       // TODO handle not enough tons
-      self.sendNft(nft, msg.prevOwner);
+      self.sendNft(sender(), msg.prevOwner);
       return;
     }
 
     let nft: Address = self.pop(random(0, self.nftsCount));
     
-    nativeReserve(ton("2"));
+    nativeReserve(ton("2"), 0);
     self.profit = self.profit + 2;
     self.sendNft(nft, msg.prevOwner);
   }
 
-  inline fun pop(i: Int) {
-    let temp: Address = self.nfts.get(i);
+  inline fun pop(i: Int): Address {
+    let temp: Address = self.nfts.get(i)!!;
     self.nfts.set(i, self.nfts.get(self.nftsCount - 1));
     return temp;
   }
