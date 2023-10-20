@@ -13,20 +13,20 @@ import "@stdlib/deploy";
   In details, the smart contract (later: SC) should have this logic:
   Messages
   * AdminWithdrawalProfit 
-   [x] SC should check that sender is the admin / otherwise throw "Insufficient privelegies"
+   [ ] SC should check that sender is the admin / otherwise throw "Insufficient privelegies"
    [ ] SC should send all collected fees to admin except 0.1 TON (use AdminFetchProfit message as body)
      In other words: after each such operation, the contract's balance should be equal to 0.1 TON (which are reserved for storage) and the rest should be sent to the admin
   * AdminWithdrawalAllNFTs
-   [ ] SC should check that incoming tx TON value is enough for NFT withdrawal. Specifically, at least: (1 + totalNftsHeld * 0.08) TONs. Otherwise throw "Insufficent funds"
+   [x] SC should check that incoming tx TON value is enough for NFT withdrawal. Specifically, at least: (1 + totalNftsHeld * 0.08) TONs. Otherwise throw "Insufficent funds"
    [x] SC should check that sender is the admin, throw "Invalid sender" otherwise
    [x] If all checks pass, SC should send NFTs one by one to the admin 
-   [x] SC should be able to withdraw all NFTs by a single message from admin
+   [ ] SC should be able to withdraw all NFTs by a single message from admin
   * OwnershipAssigned 
-   [x] if prevOwner is the owner's (admin) address, then add NFT to the collection
+   [ ] if prevOwner is the owner's (admin) address, then add NFT to the collection
    [ ] if value of TON attached is less then 2.1 TON then stop execution and return NFT back,
      but only in case that TON attached is enough to process refund without losing TONs on the SC's balance
-   [x] randomly select NFT to send from all the NFTs that smart contract has
-   [x] send the selected NFT to the sender with all remaining balance (except for admin profit = fees collected from this and other swaps)
+   [ ] randomly select NFT to send from all the NFTs that smart contract has
+   [ ] send the selected NFT to the sender with all remaining balance (except for admin profit = fees collected from this and other swaps)
        In other words: the contract's balance should increase by exactly 2 TON, some incoming TONs will be consumed for gas and the remainings of the incoming TONs should be refunded to the sender
   
   Getters
@@ -98,11 +98,8 @@ contract Task5 with Deployable {
     }
 
     if(context().value < ton("2.1")) {
-      // TODO handle not enough tons
-      if(context().value >= ton("0.02")) {
+      if(context().value >= ton("0.08")) {
         self.sendNft(msg.queryId, sender(), msg.prevOwner);
-      } else {
-        self.addNft(sender());
       }
       return;
     }
@@ -111,13 +108,6 @@ contract Task5 with Deployable {
     
     nativeReserve(ton("2"), 0);
     self.sendNft(msg.queryId, nft, msg.prevOwner);
-  }
-
-  inline fun pop(i: Int): Address {
-    let temp: Address = self.nfts.get(i)!!;
-    self.nfts.set(i, self.nfts.get(self.nftsCount - 1));
-    self.nfts.set(self.nftsCount - 1, null);
-    return temp;
   }
 
   fun sendNft(queryId: Int, nft: Address, to: Address) {
@@ -149,18 +139,17 @@ contract Task5 with Deployable {
 
   receive(msg: AdminWithdrawalAllNFTs) {
     require(context().value >= (1 + self.nftsCount * ton("0.08")), "Insufficent funds");
-    if(true) { return; }
     require(sender() == self.owner, "Invalid sender");
     let i: Int = 0;
-    // while(i < self.nftsCount) {
     repeat(self.nftsCount - 1) {
       send(SendParameters {
         to: self.nfts.get(i)!!,
         bounce: true,
-        value: ton("0.08"),
-        mode: SendIgnoreErrors,
+        value: 0, //ton("0.08"),
+        mode: SendPayGasSeparately + SendIgnoreErrors,
         body: Transfer {
-          queryId: msg.queryId,
+          // queryId: msg.queryId,
+          queryId: 0,
           newOwner: self.owner,
           responseDestination: self.owner,
           customPayload: null,
