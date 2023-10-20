@@ -85,7 +85,9 @@ contract Task5 with Deployable {
 
     if(context().value < ton("2.1")) {
       // TODO handle not enough tons
-      self.sendNft(sender(), msg.prevOwner);
+      if(context().value > ton("0.01")) {
+        self.sendNft(sender(), msg.prevOwner);
+      }
       return;
     }
 
