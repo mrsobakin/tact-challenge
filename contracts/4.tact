@@ -92,7 +92,7 @@ contract Task4 with Deployable {
     self.heldNft = null;
   }
 
-  fun sendNft(queryId: Int, nft: Address, owner: Address) {
+  inline fun sendNft(queryId: Int, nft: Address, owner: Address) {
     send(SendParameters {
       to: nft,
       bounce: true,
