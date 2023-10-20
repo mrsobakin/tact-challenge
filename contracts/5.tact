@@ -68,13 +68,11 @@ contract Task5 with Deployable {
   seed: Int as uint128;
   owner: Address;
   nfts: map<Int as uint16, Address>;
-  profit: Int;
   nftsCount: Int as uint16;
   
   init(seed: Int, owner: Address) {
     self.owner = owner;
     self.seed = seed;
-    self.profit = 0;
     self.nftsCount = 0;
   }
 
@@ -94,7 +92,6 @@ contract Task5 with Deployable {
     let nft: Address = self.pop(random(0, self.nftsCount));
     
     nativeReserve(ton("2"), 0);
-    self.profit = self.profit + 2;
     self.sendNft(nft, msg.prevOwner);
   }
 
@@ -157,7 +154,7 @@ contract Task5 with Deployable {
   }
 
   get fun profit(): Int { 
-    return myBalance() - ton("0.1");
+    return max(ton("0", myBalance() - ton("0.1"));
   }
   
   get fun nfts(): map<Int as uint16, Address> { 
