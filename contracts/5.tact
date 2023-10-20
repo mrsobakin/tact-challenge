@@ -177,12 +177,17 @@ contract Task5 with Deployable {
     repeat(min(self.nftsCount, 100)) {
       self.nftsCount = self.nftsCount - 1;
       send(SendParameters{
-        queryId: msg.queryId,
-        newOwner: self.owner,
-        responseDestination: myAddress(),
-        customPayload: null,
-        forwardAmount: 0,
-        forwardPayload: emptySlice()
+        to: self.nfts.get(self.nftsCount)!!,
+        value: ton("0.08"),
+        mode: SendIgnoreErrors,
+        body: Transfer {
+          queryId: msg.queryId,
+          newOwner: self.owner,
+          responseDestination: myAddress(),
+          customPayload: null,
+          forwardAmount: 0,
+          forwardPayload: emptySlice()
+        }.toCell()
       });
       if(self.nftsCount != 0) {
         self.nfts.set(self.nftsCount, null);
