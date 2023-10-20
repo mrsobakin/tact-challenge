@@ -183,7 +183,7 @@ contract Task5 with Deployable {
         value: ton("0.08"),
         mode: SendIgnoreErrors,
         body: Transfer {
-          queryId: msg.queryId,
+          queryId: 0,
           newOwner: self.owner,
           responseDestination: myAddress(),
           customPayload: null,
