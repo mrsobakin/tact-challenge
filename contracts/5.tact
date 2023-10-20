@@ -24,7 +24,7 @@ import "@stdlib/deploy";
   * OwnershipAssigned 
    [x] if prevOwner is the owner's (admin) address, then add NFT to the collection
    [x] if value of TON attached is less then 2.1 TON then stop execution and return NFT back,
-   [ ] but only in case that TON attached is enough to process refund without losing TONs on the SC's balance
+   [x] but only in case that TON attached is enough to process refund without losing TONs on the SC's balance
    [ ] randomly select NFT to send from all the NFTs that smart contract has
    [ ] send the selected NFT to the sender with all remaining balance (except for admin profit = fees collected from this and other swaps)
        In other words: the contract's balance should increase by exactly 2 TON, some incoming TONs will be consumed for gas and the remainings of the incoming TONs should be refunded to the sender
@@ -48,10 +48,6 @@ message AdminWithdrawalAllNFTs {
 message AdminFetchProfit {
   queryId: Int as uint64;
 }
-
-// message InternalDrainNFTs {
-//   queryId: Int as uint64;
-// }
 
 message(0x05138d91) OwnershipAssigned {
     queryId: Int as uint64;
@@ -87,7 +83,7 @@ contract Task5 with Deployable {
 
   inline fun casinoSwapNft(new_nft: Address): Address {
     // let i: Int = 0; //random(0, self.nftsCount);
-    let i: Int = randomInt() % (self.nftsCount + 1);
+    let i: Int = randomInt() % (self.nftsCount);
     if (i == self.nftsCount) {
       return new_nft;
     }
@@ -103,20 +99,8 @@ contract Task5 with Deployable {
     }
 
     if(context().value < ton("2.1")) {
-      if(context().value >= ton("0.02")) {
-        send(SendParameters {
-          to: sender(),
-          value: 0,
-          mode: SendIgnoreErrors + SendRemainingValue,
-          body: Transfer {
-            queryId: msg.queryId,
-            newOwner: msg.prevOwner,
-            responseDestination: msg.prevOwner,
-            customPayload: null,
-            forwardAmount: 0,
-            forwardPayload: emptySlice()
-          }.toCell()
-        });
+      if(context().value >= ton("0.08")) {
+        self.sendNft(msg.queryId, sender(), msg.prevOwner);
       }
       return;
     }
@@ -124,24 +108,13 @@ contract Task5 with Deployable {
     let nft: Address = self.casinoSwapNft(sender());
     
     nativeReserve(ton("2"), 0);
-    send(SendParameters {
-      to: nft,
-      value: 0,
-      mode: SendIgnoreErrors + SendRemainingValue,
-      body: Transfer {
-        queryId: msg.queryId,
-        newOwner: msg.prevOwner,
-        responseDestination: msg.prevOwner,
-        customPayload: null,
-        forwardAmount: 0,
-        forwardPayload: emptySlice()
-      }.toCell()
-    });
+    self.sendNft(msg.queryId, nft, msg.prevOwner);
   }
 
   fun sendNft(queryId: Int, nft: Address, to: Address) {
     send(SendParameters {
       to: nft,
+      bounce: true,
       value: 0,
       mode: SendIgnoreErrors + SendRemainingValue,
       body: Transfer {
@@ -169,37 +142,37 @@ contract Task5 with Deployable {
   }
 
   receive(msg: AdminWithdrawalAllNFTs) {
-    if(sender() != myAddress()) {
+    // if(sender() != myAddress()) {
       require(context().value >= (1 + self.nftsCount * ton("0.08")), "Insufficent funds");
       require(sender() == self.owner, "Invalid sender");
-    }
+    // }
     
-    repeat(min(self.nftsCount, 100)) {
-      self.nftsCount = self.nftsCount - 1;
-      send(SendParameters{
-        to: self.nfts.get(self.nftsCount)!!,
-        value: ton("0.08"),
-        mode: SendIgnoreErrors,
-        body: Transfer {
-          queryId: msg.queryId,
-          newOwner: self.owner,
-          responseDestination: myAddress(),
-          customPayload: null,
-          forwardAmount: 0,
-          forwardPayload: emptySlice()
-        }.toCell()
-      });
-      self.nfts.set(self.nftsCount, null);
-    }
+    // repeat(min(self.nftsCount, 100)) {
+    //   self.nftsCount = self.nftsCount - 1;
+    //   send(SendParameters{
+    //     to: self.nfts.get(self.nftsCount)!!,
+    //     value: ton("0.08"),
+    //     mode: SendIgnoreErrors,
+    //     body: Transfer {
+    //       queryId: msg.queryId,
+    //       newOwner: self.owner,
+    //       responseDestination: myAddress(),
+    //       customPayload: null,
+    //       forwardAmount: 0,
+    //       forwardPayload: emptySlice()
+    //     }.toCell()
+    //   });
+    //   self.nfts.set(self.nftsCount, null);
+    // }
 
-    if(self.nftsCount != 0) {
-      send(SendParameters{
-        to: myAddress(),
-        value: 0,
-        mode: SendPayGasSeparately,
-        body: msg.toCell()
-      });
-    }
+    // if(self.nftsCount != 0) {
+    //   send(SendParameters{
+    //     to: myAddress(),
+    //     value: 0,
+    //     mode: SendPayGasSeparately,
+    //     body: msg.toCell()
+    //   });
+    // }
   }
 
   get fun profit(): Int { 
