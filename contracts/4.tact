@@ -45,50 +45,46 @@ message NftWithdrawal {
   nftAddress: Address;
 }
 
-struct HeldNft {
-  releaseTime: Int as uint32;
-  owner: Address;
-  nft: Address;
-}
-
 contract Task4 with Deployable {
   seed: Int as uint128;
-  heldNft: HeldNft?;
+  releaseTime: Int? as uint32;
+  owner: Address?;
+  nft: Address?;
   
   init(seed: Int) {
     self.seed = seed;
-    self.heldNft = null;
+    self.releaseTime = null;
+    self.owner = null;
+    self.nft = null;
   }
 
   receive(msg: OwnershipAssigned) {
-    if(self.heldNft != null) {
+    if(self.releaseTime != null) {
       self.sendNft(msg.queryId, sender(), msg.prevOwner);
       return;
     }
     
-    self.heldNft = HeldNft {
-      releaseTime: now() + msg.forwardPayload.loadUint(32),
-      owner: msg.prevOwner,
-      nft: sender()
-    };
+    self.releaseTime = now() + msg.forwardPayload.loadUint(32);
+    self.owner = msg.prevOwner;
+    self.nft = sender();
   }
 
   receive(msg: NftWithdrawal) {
-    require(self.heldNft != null, "No NFT is held");
-    require(sender() == (self.heldNft!!).owner, "Invalid sender");
-    require(msg.nftAddress == (self.heldNft!!).nft, "Locker does not hold such NFT");
+    require(self.nft != null, "No NFT is held");
+    require(sender() == self.owner!!, "Invalid sender");
+    require(msg.nftAddress == self.nft!!, "Locker does not hold such NFT");
 
-    if(now() < (self.heldNft!!).releaseTime) {
+    if(now() < self.releaseTime!!) {
       self.reply("NFT is still locked".asComment());
       return;
     }
 
     self.sendNft(
       msg.queryId,
-      (self.heldNft!!).nft, 
-      (self.heldNft!!).owner
+      self.nft!!, 
+      self.owner!!
     );
-    self.heldNft = null;
+    self.releaseTime = null;
   }
 
   fun sendNft(queryId: Int, nft: Address, owner: Address) {
@@ -109,10 +105,10 @@ contract Task4 with Deployable {
   }
 
   get fun time(): Int {
-    if(self.heldNft == null) {
+    if(self.nft == null) {
       return 0;
     }
-    let untilRelease: Int = (self.heldNft!!).releaseTime - now();
+    let untilRelease: Int = (self.releaseTime!!) - now();
     if(untilRelease >= 0) {
       return untilRelease;
     } else {
@@ -121,16 +117,16 @@ contract Task4 with Deployable {
   }
 
   get fun nft(): Address? {
-    if(self.heldNft == null) {
+    if(self.nft == null) {
       return null;
     }
-    return (self.heldNft!!).nft;
+    return (self.nft!!);
   }
 
   get fun owner(): Address? {
-    if(self.heldNft == null) {
+    if(self.nft == null) {
       return null;
     }
-    return (self.heldNft!!).owner;
+    return (self.owner!!);
   }
 }
