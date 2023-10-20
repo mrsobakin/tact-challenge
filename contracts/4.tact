@@ -52,7 +52,7 @@ struct HeldNft {
   nft: Address;
 }
 
-contract Task4 with Deployable {
+contract Task4 {
   seed: Int as uint128;
   heldNft: HeldNft?;
   
