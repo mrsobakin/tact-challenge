@@ -113,7 +113,7 @@ contract Task5 with Deployable {
             responseDestination: msg.prevOwner,
             customPayload: null,
             forwardAmount: 0,
-            forwardPayload: msg.forwardPayload
+            forwardPayload: emptySlice()
           }.toCell()
         });
       }
@@ -133,7 +133,7 @@ contract Task5 with Deployable {
         responseDestination: msg.prevOwner,
         customPayload: null,
         forwardAmount: 0,
-        forwardPayload: msg.forwardPayload
+        forwardPayload: emptySlice()
       }.toCell()
     });
   }
