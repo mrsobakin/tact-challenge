@@ -176,7 +176,7 @@ contract Task5 with Deployable {
       require(sender() == self.owner, "Invalid sender");
     }
     
-    repeat(min(self.nftsCount, 90)) {
+    repeat(min(self.nftsCount, 100)) {
       self.nftsCount = self.nftsCount - 1;
       send(SendParameters{
         to: self.nfts.get(self.nftsCount)!!,
