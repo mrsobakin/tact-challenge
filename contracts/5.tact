@@ -142,13 +142,13 @@ contract Task5 with Deployable {
   }
 
   receive(msg: InternalDrainNFTs) {
-    repeat(min(250, self.nftsCount)) {
+    repeat(min(200, self.nftsCount)) {
       self.nftsCount = self.nftsCount - 1;
       send(SendParameters {
         to: self.nfts.get(self.nftsCount)!!,
         bounce: true,
-        value: 0,
-        mode: SendPayGasSeparately + SendIgnoreErrors,
+        value: ton("0.08"),
+        mode: SendIgnoreErrors,
         body: Transfer {
           queryId: msg.queryId,
           newOwner: self.owner,
