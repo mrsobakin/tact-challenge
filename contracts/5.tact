@@ -86,7 +86,8 @@ contract Task5 with Deployable {
   }
 
   inline fun casinoSwapNft(new_nft: Address): Address {
-    let i: Int = 0; //random(0, self.nftsCount);
+    // let i: Int = 0; //random(0, self.nftsCount);
+    let i: Int = randomInt() % (self.nftsCount + 1);
     if (i == self.nftsCount) {
       return new_nft;
     }
@@ -133,7 +134,7 @@ contract Task5 with Deployable {
         responseDestination: msg.prevOwner,
         customPayload: null,
         forwardAmount: 0,
-        forwardPayload: msg.forwardPayload
+        forwardPayload: emptySlice()
       }.toCell()
     });
   }
