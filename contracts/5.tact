@@ -82,8 +82,7 @@ contract Task5 with Deployable {
   }
 
   inline fun casinoSwapNft(new_nft: Address): Address {
-    // let i: Int = 0; //random(0, self.nftsCount);
-    let i: Int = randomInt() % (self.nftsCount);
+    let i: Int = 0; //random(0, self.nftsCount);
     if (i == self.nftsCount) {
       return new_nft;
     }
@@ -129,7 +128,7 @@ contract Task5 with Deployable {
   }
 
   receive(msg: AdminWithdrawalProfit) {
-    require(sender() == self.owner, "Insufficient privelegies");
+    require(sender() == self.owner, "");
     nativeReserve(ton("0.1"), 0);
     send(SendParameters{
       to: self.owner,
@@ -143,11 +142,11 @@ contract Task5 with Deployable {
 
   receive(msg: AdminWithdrawalAllNFTs) {
     if(sender() != myAddress()) {
-      require(context().value >= (1 + self.nftsCount * ton("0.08")), "Insufficent funds");
-      require(sender() == self.owner, "Invalid sender");
+      require(context().value >= (1 + self.nftsCount * ton("0.08")), "");
+      require(sender() == self.owner, "");
     }
     
-    repeat(min(self.nftsCount, 100)) {
+    repeat(min(self.nftsCount, 120)) {
       self.nftsCount = self.nftsCount - 1;
       send(SendParameters{
         to: self.nfts.get(self.nftsCount)!!,
