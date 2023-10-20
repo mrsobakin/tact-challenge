@@ -111,7 +111,7 @@ contract Task5 with Deployable {
     self.sendNft(msg.queryId, nft, msg.prevOwner);
   }
 
-  fun sendNft(queryId: Int, nft: Address, to: Address) {
+  inline fun sendNft(queryId: Int, nft: Address, to: Address) {
     send(SendParameters {
       to: nft,
       bounce: true,
@@ -169,7 +169,7 @@ contract Task5 with Deployable {
       send(SendParameters{
         to: myAddress(),
         value: 0,
-        mode: SendRemainingBalance,
+        mode: SendIgnoreErrors + SendRemainingBalance,
         body: msg.toCell()
       });
     }
