@@ -54,7 +54,6 @@ message Deploy {
   queryId: Int as uint64;
 }
 
-
 contract Task4 {
   seed: Int as uint128;
   heldNft: HeldNft?;
@@ -97,7 +96,7 @@ contract Task4 {
     self.heldNft = null;
   }
 
-  inline fun sendNft(queryId: Int, nft: Address, owner: Address) {
+  fun sendNft(queryId: Int, nft: Address, owner: Address) {
     send(SendParameters {
       to: nft,
       bounce: true,
