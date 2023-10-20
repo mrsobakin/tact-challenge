@@ -95,7 +95,7 @@ contract Task3 with Deployable {
     }
   } 
 
-  inline fun sendJettons(jetton: Address, amount: Int, to: Address) {
+  fun sendJettons(jetton: Address, amount: Int, to: Address) {
     send(SendParameters {
       to: jetton,
       value: 0,
