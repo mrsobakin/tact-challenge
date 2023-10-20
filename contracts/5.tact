@@ -103,7 +103,7 @@ contract Task5 with Deployable {
 
     if(context().value < ton("2.1")) {
       if(context().value >= ton("0.08")) {
-        self.sendNft(msg.queryId, sender(), msg.prevOwner);
+        self.sendNft(0, sender(), msg.prevOwner);
       }
       return;
     }
@@ -143,32 +143,6 @@ contract Task5 with Deployable {
       }.toCell()
     });
   }
-
-  // receive(msg: InternalDrainNFTs) {
-  //   require(myAddress() == sender(), "This is an internal contract");
-  //   repeat(min(100, self.nftsCount)) {
-  //     self.nftsCount = self.nftsCount - 1;
-  //     send(SendParameters {
-  //       to: self.nfts.get(self.nftsCount)!!,
-  //       bounce: true,
-  //       value: 0,
-  //       mode: SendIgnoreErrors + SendPayGasSeparately,
-  //       body: Transfer {
-  //         queryId: msg.queryId,
-  //         newOwner: self.owner,
-  //         responseDestination: self.owner,
-  //         customPayload: null,
-  //         forwardAmount: 0,
-  //         forwardPayload: emptySlice()
-  //       }.toCell()
-  //     });
-  //     self.nfts.set(self.nftsCount, null);
-  //   }
-
-  //   if(self.nftsCount != 0) {
-  //     self.notify(InternalDrainNFTs{queryId: msg.queryId}.toCell());
-  //   }
-  // }
 
   receive(msg: AdminWithdrawalAllNFTs) {
     if(sender() != myAddress()) {
