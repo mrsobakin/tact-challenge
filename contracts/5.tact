@@ -148,8 +148,7 @@ contract Task5 with Deployable {
         value: 0, //ton("0.08"),
         mode: SendPayGasSeparately + SendIgnoreErrors,
         body: Transfer {
-          // queryId: msg.queryId,
-          queryId: 0,
+          queryId: msg.queryId,
           newOwner: self.owner,
           responseDestination: self.owner,
           customPayload: null,
