@@ -81,7 +81,7 @@ contract Task5 with Deployable {
     self.nftsCount = self.nftsCount + 1;
   }
 
-  inline fun casinoSwapNft(new_nft: Address) {
+  inline fun casinoSwapNft(new_nft: Address): Address {
     let i: Int = random(0, self.nftsCount);
     if (i == self.nftsCount) {
       return new_nft;
@@ -93,7 +93,7 @@ contract Task5 with Deployable {
 
   receive(msg: OwnershipAssigned) {
     if(msg.prevOwner == self.owner) {
-      addNft(sender());
+      self.addNft(sender());
       return;
     }
 
