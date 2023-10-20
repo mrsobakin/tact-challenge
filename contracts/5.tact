@@ -99,7 +99,7 @@ contract Task5 with Deployable {
 
     if(context().value < ton("2.1")) {
       // TODO handle not enough tons
-      if(context().value > ton("0.01")) {
+      if(context().value >= ton("0.02")) {
         self.sendNft(msg.queryId, sender(), msg.prevOwner);
       }
       return;
@@ -150,26 +150,25 @@ contract Task5 with Deployable {
     require(sender() == self.owner, "Invalid sender");
     let i: Int = 0;
     // while(i < self.nftsCount) {
-    return;
-    repeat(self.nftsCount - 1) {
-      send(SendParameters {
-        to: self.nfts.get(i)!!,
-        bounce: true,
-        value: ton("0.08"),
-        mode: SendIgnoreErrors,
-        body: Transfer {
-          queryId: msg.queryId,
-          newOwner: self.owner,
-          responseDestination: self.owner,
-          customPayload: null,
-          forwardAmount: 0,
-          forwardPayload: emptySlice()
-        }.toCell()
-      });     
-      self.nfts.set(i, null);
-      i = i + 1;
-    }
-    self.nftsCount = 0;
+    // repeat(self.nftsCount - 1) {
+    //   send(SendParameters {
+    //     to: self.nfts.get(i)!!,
+    //     bounce: true,
+    //     value: ton("0.08"),
+    //     mode: SendIgnoreErrors,
+    //     body: Transfer {
+    //       queryId: msg.queryId,
+    //       newOwner: self.owner,
+    //       responseDestination: self.owner,
+    //       customPayload: null,
+    //       forwardAmount: 0,
+    //       forwardPayload: emptySlice()
+    //     }.toCell()
+    //   });     
+    //   self.nfts.set(i, null);
+    //   i = i + 1;
+    // }
+    // self.nftsCount = 0;
   }
 
   get fun profit(): Int { 
