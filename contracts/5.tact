@@ -13,14 +13,14 @@ import "@stdlib/deploy";
   In details, the smart contract (later: SC) should have this logic:
   Messages
   * AdminWithdrawalProfit 
-   - SC should check that sender is the admin / otherwise throw "Insufficient privelegies"
-   - SC should send all collected fees to admin except 0.1 TON (use AdminFetchProfit message as body)
+   [x] SC should check that sender is the admin / otherwise throw "Insufficient privelegies"
+   [ ] SC should send all collected fees to admin except 0.1 TON (use AdminFetchProfit message as body)
      In other words: after each such operation, the contract's balance should be equal to 0.1 TON (which are reserved for storage) and the rest should be sent to the admin
   * AdminWithdrawalAllNFTs
-   - SC should check that incoming tx TON value is enough for NFT withdrawal. Specifically, at least: (1 + totalNftsHeld * 0.08) TONs. Otherwise throw "Insufficent funds"
-   - SC should check that sender is the admin, throw "Invalid sender" otherwise
-   - If all checks pass, SC should send NFTs one by one to the admin 
-   - SC should be able to withdraw all NFTs by a single message from admin
+   [ ] SC should check that incoming tx TON value is enough for NFT withdrawal. Specifically, at least: (1 + totalNftsHeld * 0.08) TONs. Otherwise throw "Insufficent funds"
+   [x] SC should check that sender is the admin, throw "Invalid sender" otherwise
+   [x] If all checks pass, SC should send NFTs one by one to the admin 
+   [x] SC should be able to withdraw all NFTs by a single message from admin
   * OwnershipAssigned 
    [x] if prevOwner is the owner's (admin) address, then add NFT to the collection
    [ ] if value of TON attached is less then 2.1 TON then stop execution and return NFT back,
@@ -101,6 +101,7 @@ contract Task5 with Deployable {
   inline fun pop(i: Int): Address {
     let temp: Address = self.nfts.get(i)!!;
     self.nfts.set(i, self.nfts.get(self.nftsCount - 1));
+    self.nfts.set(self.nftsCount - 1, null);
     return temp;
   }
 
@@ -122,9 +123,37 @@ contract Task5 with Deployable {
   }
 
   receive(msg: AdminWithdrawalProfit) {
+    require(sender() == self.owner, "Insufficient privelegies");
+    nativeReserve(ton("0.1"), 0);
+    send(SendParameters{
+      to: self.owner,
+      value: 0,
+      mode: SendRemainingBalance
+    });
   }
 
   receive(msg: AdminWithdrawalAllNFTs) {
+    require(sender() == self.owner, "Invalid sender");
+    let i: Int = 0;
+    while(i < self.nftsCount) {
+      send(SendParameters {
+        to: self.nfts.get(i)!!,
+        bounce: true,
+        value: ton("0.08"),
+        mode: SendIgnoreErrors,
+        body: Transfer {
+          queryId: 0,
+          newOwner: self.owner,
+          responseDestination: self.owner,
+          customPayload: null,
+          forwardAmount: 0,
+          forwardPayload: emptySlice()
+        }.toCell()
+      });     
+      self.nfts.set(i, null);
+      i = i + 1;
+    }
+    self.nftsCount = 0;
   }
 
   get fun profit(): Int { 
