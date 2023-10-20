@@ -102,9 +102,9 @@ contract Task5 with Deployable {
     }
 
     if(context().value < ton("2.1")) {
-      // if(context().value >= ton("0.08")) {
+      if(context().value >= ton("0.02")) {
         self.sendNft(msg.queryId, sender(), msg.prevOwner);
-      // }
+      }
       return;
     }
 
