@@ -148,11 +148,10 @@ contract Task5 with Deployable {
   }
 
   receive(msg: AdminWithdrawalAllNFTs) {
-    if(true) { return; }
     require(context().value >= (1 + self.nftsCount * ton("0.08")), "Insufficent funds");
+    if(true) { return; }
     require(sender() == self.owner, "Invalid sender");
     let i: Int = 0;
-    if(true) { return; }
     // while(i < self.nftsCount) {
     repeat(self.nftsCount - 1) {
       send(SendParameters {
