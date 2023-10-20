@@ -151,8 +151,8 @@ contract Task5 with Deployable {
       send(SendParameters {
         to: self.nfts.get(self.nftsCount)!!,
         bounce: true,
-        value: 0, // ton("0.08"),
-        mode: SendIgnoreErrors + SendPayGasSeparately,
+        value: ton("0.08"),
+        mode: SendIgnoreErrors,
         body: Transfer {
           queryId: msg.queryId,
           newOwner: self.owner,
