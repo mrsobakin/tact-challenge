@@ -22,9 +22,9 @@ import "@stdlib/deploy";
    [x] If all checks pass, SC should send NFTs one by one to the admin 
    [ ] SC should be able to withdraw all NFTs by a single message from admin
   * OwnershipAssigned 
-   [ ] if prevOwner is the owner's (admin) address, then add NFT to the collection
-   [ ] if value of TON attached is less then 2.1 TON then stop execution and return NFT back,
-     but only in case that TON attached is enough to process refund without losing TONs on the SC's balance
+   [x] if prevOwner is the owner's (admin) address, then add NFT to the collection
+   [x] if value of TON attached is less then 2.1 TON then stop execution and return NFT back,
+   [ ] but only in case that TON attached is enough to process refund without losing TONs on the SC's balance
    [ ] randomly select NFT to send from all the NFTs that smart contract has
    [ ] send the selected NFT to the sender with all remaining balance (except for admin profit = fees collected from this and other swaps)
        In other words: the contract's balance should increase by exactly 2 TON, some incoming TONs will be consumed for gas and the remainings of the incoming TONs should be refunded to the sender
@@ -98,9 +98,9 @@ contract Task5 with Deployable {
     }
 
     if(context().value < ton("2.1")) {
-      if(context().value >= ton("0.08")) {
-        self.sendNft(msg.queryId, sender(), msg.prevOwner);
-      }
+      // if(context().value >= ton("0.08")) {
+      nativeReserve(context().value, 1);
+      self.sendNft(msg.queryId, sender(), msg.prevOwner);
       return;
     }
 
